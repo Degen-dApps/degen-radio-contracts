@@ -3,8 +3,10 @@ pragma solidity 0.8.24;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { ERC721, ERC721Enumerable } from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
 
 interface IMetadata {
+  function getMetadata(uint256 tokenId_) external view returns (string memory);
   function setDescription(uint256 tokenId_, string memory description_) external;
   function setImage(uint256 tokenId_, string memory image_) external;
   function setName(uint256 tokenId_, string memory name_) external;
@@ -24,6 +26,12 @@ contract DegenRadioPlaylistNft is ERC721, ERC721Enumerable, Ownable {
   mapping(uint256 => address) public playlists; // mapping of playlist NFT token IDs to playlist contract addresses
   mapping(address => bool) public writers; // addresses that can add playlists
 
+  // MODIFIERS
+  modifier onlyWriter() {
+    require(writers[msg.sender], "DegenRadioPlaylistNft: caller is not a writer");
+    _;
+  }
+
   // CONSTRUCTOR
   constructor() ERC721("Degen Radio Playlists", "PLAYLISTS") Ownable(msg.sender) {}
 
@@ -34,7 +42,8 @@ contract DegenRadioPlaylistNft is ERC721, ERC721Enumerable, Ownable {
 
   function getExternalUrl(uint256 tokenId_) external view returns (string memory) {
     address playlistAddress = playlists[tokenId_];
-    return string(abi.encodePacked(baseUrl, playlistAddress));
+    string memory addrStr = Strings.toHexString(uint256(uint160(playlistAddress)), 20);
+    return string(abi.encodePacked(baseUrl, addrStr));
   }
 
   function getPlaylistAddress(uint256 tokenId_) external view returns (address) {
@@ -43,6 +52,10 @@ contract DegenRadioPlaylistNft is ERC721, ERC721Enumerable, Ownable {
 
   function isWriter(address writer_) external view returns (bool) {
     return writers[writer_];
+  }
+
+  function tokenURI(uint256 tokenId_) public view override returns (string memory) {
+    return IMetadata(metadataAddress).getMetadata(tokenId_);
   }
 
   // WRITER
@@ -59,7 +72,7 @@ contract DegenRadioPlaylistNft is ERC721, ERC721Enumerable, Ownable {
     string memory name_,
     string memory description_,
     string memory image_
-  ) external onlyOwner {
+  ) external onlyWriter {
     require(writers[msg.sender], "DegenRadioPlaylistNft: caller is not a writer");
 
     playlists[counter] = playlistAddress_;
