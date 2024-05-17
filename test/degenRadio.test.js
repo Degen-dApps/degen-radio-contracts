@@ -133,6 +133,21 @@ describe("Degen Radio test", function () {
     console.log(playlistMetadata);
     //console.log(JSON.parse(playlistMetadata).name);
     expect(JSON.parse(playlistMetadata).name).to.equal(playlistName);
+
+    // check owner of playlist NFT
+    let playlistOwner = await playlistNftContract.ownerOf(playlistId);
+    expect(playlistOwner).to.equal(owner.address);
+
+    // check owners balance of playlist NFTs
+    let ownerBalance = await playlistNftContract.balanceOf(owner.address);
+    expect(ownerBalance).to.equal(1);
+
+    // check which NFT IDs owner owns (tokenOfOwnerByIndex)
+    let playlistIdOfOwner = await playlistNftContract.tokenOfOwnerByIndex(owner.address, 0);
+    expect(playlistIdOfOwner).to.equal(playlistId);
+
+    // expect a revert (ERC721OutOfBoundsIndex) for index 1
+    await expect(playlistNftContract.tokenOfOwnerByIndex(owner.address, 1)).to.be.reverted;
   });
 
 });
