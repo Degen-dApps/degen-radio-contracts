@@ -34,7 +34,7 @@ interface IState {
 contract DegenRadioMetadata {
   using Strings for uint256;
 
-  address public immutable mdState; // address of the metadata state smart contract
+  address public immutable mdStateAddress; // address of the metadata state smart contract
   address public immutable playlistNftAddress; // address of the Playlist NFT smart contract
 
   // MODIFIERS
@@ -57,15 +57,15 @@ contract DegenRadioMetadata {
   event NameSet(address indexed caller_, uint256 indexed tokenId_);
 
   // CONSTRUCTOR
-  constructor(address mdState_, address playlistNftAddress_) {
-    mdState = mdState_;
+  constructor(address mdStateAddress_, address playlistNftAddress_) {
+    mdStateAddress = mdStateAddress_;
     playlistNftAddress = playlistNftAddress_;
   }
 
   // READ
 
   function getDescription(uint256 tokenId_) external view returns (string memory) {
-    return IState(mdState).getDescription(tokenId_);
+    return IState(mdStateAddress).getDescription(tokenId_);
   }
 
   function getExternalUrl(uint256 tokenId_) external view returns (string memory) {
@@ -73,15 +73,15 @@ contract DegenRadioMetadata {
   }
 
   function getGenre(uint256 tokenId_) external view returns (string memory) {
-    return IState(mdState).getGenre(tokenId_);
+    return IState(mdStateAddress).getGenre(tokenId_);
   }
 
   function getImage(uint256 tokenId_) external view returns (string memory) {
-    return IState(mdState).getImage(tokenId_);
+    return IState(mdStateAddress).getImage(tokenId_);
   }
 
   function getMetadata(uint256 tokenId_) external view returns (string memory) {
-    (string memory description_, string memory genre_, string memory image_, string memory name_) = IState(mdState).mds(tokenId_);
+    (string memory description_, string memory genre_, string memory image_, string memory name_) = IState(mdStateAddress).mds(tokenId_);
 
     return string(
       abi.encodePacked("data:application/json;base64,", Base64.encode(bytes(abi.encodePacked(
@@ -96,7 +96,7 @@ contract DegenRadioMetadata {
   }
 
   function getName(uint256 tokenId_) external view returns (string memory) {
-    return IState(mdState).getName(tokenId_);
+    return IState(mdStateAddress).getName(tokenId_);
   }
 
   function getPlaylistAddress(uint256 tokenId_) external view returns (address) {
@@ -116,22 +116,22 @@ contract DegenRadioMetadata {
   // WRITE (TOKEN HOLDERS ONLY)
 
   function setDescription(uint256 tokenId_, string memory description_) external onlyTokenHolder(tokenId_) {
-    IState(mdState).setDescription(tokenId_, description_);
+    IState(mdStateAddress).setDescription(tokenId_, description_);
     emit DescriptionSet(msg.sender, tokenId_);
   }
 
   function setGenre(uint256 tokenId_, string memory genre_) external onlyTokenHolder(tokenId_) {
-    IState(mdState).setGenre(tokenId_, genre_);
+    IState(mdStateAddress).setGenre(tokenId_, genre_);
     emit GenreSet(msg.sender, tokenId_);
   }
 
   function setImage(uint256 tokenId_, string memory image_) external onlyTokenHolder(tokenId_) {
-    IState(mdState).setImage(tokenId_, image_);
+    IState(mdStateAddress).setImage(tokenId_, image_);
     emit ImageSet(msg.sender, tokenId_);
   }
 
   function setName(uint256 tokenId_, string memory name_) external onlyTokenHolder(tokenId_) {
-    IState(mdState).setName(tokenId_, name_);
+    IState(mdStateAddress).setName(tokenId_, name_);
     emit NameSet(msg.sender, tokenId_);
   }
 

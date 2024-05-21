@@ -54,6 +54,8 @@ describe("Degen Radio test", function () {
 
   // check initial state variables
   it("Should have correct initial state variables", async function () {
+    console.log(" "); // empty line in console
+
     let playlistNftMetadataAddress = await playlistNftContract.metadataAddress();
     expect(playlistNftMetadataAddress).to.equal(metadataContract.address);
 
@@ -88,6 +90,7 @@ describe("Degen Radio test", function () {
 
   // check owners of all contracts
   it("The owner address should be the owner of DegenRadioFactory, DegenRadioMetadataState & DegenRadioPlaylistNft", async function () {
+    console.log(" "); // empty line in console
     let factoryOwner = await factoryContract.owner();
     expect(factoryOwner).to.equal(owner.address);
 
@@ -100,6 +103,8 @@ describe("Degen Radio test", function () {
 
   // create a playlist
   it("Should create a playlist", async function () {
+    console.log(" "); // empty line in console
+
     let playlistId = 1;
     let playlistName = "First playlist";
     let playlistDescription = "This is the first playlist";
@@ -125,7 +130,6 @@ describe("Degen Radio test", function () {
 
     let playlistAddress = await playlistNftContract.getPlaylistAddress(playlistId);
     console.log("Playlist address:", playlistAddress);
-    console.log(" ");
 
     // decode playlistMetadata base64 string
     playlistMetadata = playlistMetadata.split(",")[1];
@@ -148,6 +152,109 @@ describe("Degen Radio test", function () {
 
     // expect a revert (ERC721OutOfBoundsIndex) for index 1
     await expect(playlistNftContract.tokenOfOwnerByIndex(owner.address, 1)).to.be.reverted;
+
+    // create playlist contract instance
+    const DegenRadioPlaylist = await ethers.getContractFactory("DegenRadioPlaylist");
+    const playlistContract = await DegenRadioPlaylist.attach(playlistAddress);
+
+    // get managers list before
+    const managersBefore = await playlistContract.getManagers();
+    expect(managersBefore.length).to.equal(0);
+
+    // add user1 as manager
+    await playlistContract.addManager(user1.address);
+
+    // get managers list after
+    const managersAfter = await playlistContract.getManagers();
+    expect(managersAfter.length).to.equal(1);
+
+    // get up to 5 latest tracks in DegenRadioPlaylist.sol
+    const lastTracks1 = await playlistContract.getLastTracks(5);
+    //console.log("Last 5 tracks:", lastTracks1);
+    expect(lastTracks1.length).to.equal(1);
+
+    // get track with index 0
+    const track = await playlistContract.getTrack(0);
+    console.log("Track:", track.nftAddress);
+    expect(track.nftAddress).to.equal(musicNftContract1.address);
+
+    // get track with index 1 (expect a revert)
+    await expect(playlistContract.getTrack(1)).to.be.reverted;
+
+    // get track data for track with index 0
+    const trackData = await playlistContract.getTrackData(0);
+    //console.log("Track data:", trackData);
+    expect(trackData.nftAddress).to.equal(musicNftContract1.address);
+
+    // add one more track to the playlist
+    await playlistContract.addTrack(
+      musicNftContract2.address, // track address
+      1, // track token ID (if not found, use 1)
+      1, // track type (1: ERC721 with same metadata, 2: ERC721 with different metadata, 3: ERC1155)
+    );
+
+    const lastTracks2 = await playlistContract.getLastTracks(5);
+    //console.log("Last 5 tracks:", lastTracks2);
+    expect(lastTracks2.length).to.equal(2);
+
+    // manager adds one more track to the playlist
+    await playlistContract.connect(user1).addTrack(
+      musicNftContract3.address, // track address
+      1, // track token ID (if not found, use 1)
+      1, // track type (1: ERC721 with same metadata, 2: ERC721 with different metadata, 3: ERC1155)
+    );
+
+    const lastTracks3 = await playlistContract.getLastTracks(5);
+    //console.log("Last 5 tracks:", lastTracks3);
+    expect(lastTracks3.length).to.equal(3);
+
+    // manager removes track with index 2
+    await playlistContract.connect(user1).removeTrackByIndex(1);
+
+    const lastTracks4 = await playlistContract.getLastTracks(5);
+    //console.log("Last 5 tracks:", lastTracks4);
+    expect(lastTracks4.length).to.equal(2);
+
+    // get playlist genre from metadata contract before
+    const playlistGenreBefore = await metadataContract.getGenre(playlistId);
+    console.log("Playlist genre before:", playlistGenreBefore);
+    expect(playlistGenreBefore).to.equal("");
+    
+    let track1Genre = "Rock";
+    await metadataContract.setGenre(playlistId, track1Genre);
+
+    // get playlist genre from metadata contract after
+    const playlistGenreAfter = await metadataContract.getGenre(playlistId);
+    console.log("Playlist genre after owner's change:", playlistGenreAfter);
+
+    // manager updates genre
+    track1Genre = "Pop";
+    await metadataContract.connect(user1).setGenre(playlistId, track1Genre);
+
+    // get playlist genre from metadata contract after2
+    const playlistGenreAfter2 = await metadataContract.getGenre(playlistId);
+    console.log("Playlist genre after manager's change:", playlistGenreAfter2);
+    expect(playlistGenreAfter2).to.equal(track1Genre);
+
+    // fetch metadata again
+    playlistMetadata = await playlistNftContract.tokenURI(playlistId);
+
+    // decode playlistMetadata base64 string
+    playlistMetadata = playlistMetadata.split(",")[1];
+    playlistMetadata = Buffer.from(playlistMetadata, "base64").toString();
+    //console.log(playlistMetadata);
+    expect(JSON.parse(playlistMetadata).genre).to.equal(track1Genre);
+
+    // remove user1 as manager
+    await playlistContract.removeManagerByAddress(user1.address);
+    
+    // get managers list after2
+    const managersAfter2 = await playlistContract.getManagers();
+    expect(managersAfter2.length).to.equal(0);
   });
+
+  // TODO: 
+  // - change custom order of tracks in playlist
+  // - getExternalUrl from playlist NFT contract
 
 });
