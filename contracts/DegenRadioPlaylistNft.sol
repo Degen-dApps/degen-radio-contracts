@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity 0.8.24;
 
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { ERC721, ERC721Enumerable } from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
+import { OwnableWithManagers } from "./access/OwnableWithManagers.sol";
 
 interface IMetadata {
   function getMetadata(uint256 tokenId_) external view returns (string memory);
@@ -18,7 +18,7 @@ interface IMetadata {
  * @notice Smart contract where each NFT token ID represents a Degen Radio Playlist (and an ownership of the playlist contract).
  * @notice Put the radio on the blockchain.
  */
-contract DegenRadioPlaylistNft is ERC721, ERC721Enumerable, Ownable {
+contract DegenRadioPlaylistNft is ERC721, ERC721Enumerable, OwnableWithManagers {
   address public metadataAddress; // address of the metadata contract
   string public baseUrl = "https://degenradio.lol/playlist/"; // base URL for Degen Radio website
   uint256 public counter = 1; // counter for playlist IDs
@@ -32,8 +32,14 @@ contract DegenRadioPlaylistNft is ERC721, ERC721Enumerable, Ownable {
     _;
   }
 
+  // EVENTS
+  event BaseUrlSet(address indexed caller_);
+  event MetadataAddressSet(address indexed caller_, address indexed metadataAddress_);
+  event WriterAdded(address indexed caller_, address indexed writer_);
+  event WriterRemoved(address indexed caller_, address indexed writer_);
+
   // CONSTRUCTOR
-  constructor() ERC721("Degen Radio Playlists", "PLAYLISTS") Ownable(msg.sender) {}
+  constructor() ERC721("Degen Radio Playlists", "PLAYLISTS") {}
 
   // READ
   function getCounter() external view returns (uint256) {
@@ -86,20 +92,24 @@ contract DegenRadioPlaylistNft is ERC721, ERC721Enumerable, Ownable {
   }
 
   // OWNER
-  function addWriter(address writer_) external onlyOwner {
+  function addWriter(address writer_) external onlyManagerOrOwner {
     writers[writer_] = true;
+    emit WriterAdded(msg.sender, writer_);
   }
 
-  function removeWriter(address writer_) external onlyOwner {
+  function removeWriter(address writer_) external onlyManagerOrOwner {
     writers[writer_] = false;
+    emit WriterRemoved(msg.sender, writer_);
   }
 
-  function setBaseUrl(string memory baseUrl_) external onlyOwner {
+  function setBaseUrl(string memory baseUrl_) external onlyManagerOrOwner {
     baseUrl = baseUrl_;
+    emit BaseUrlSet(msg.sender);
   }
 
-  function setMetadataAddress(address metadataAddress_) external onlyOwner {
+  function setMetadataAddress(address metadataAddress_) external onlyManagerOrOwner {
     metadataAddress = metadataAddress_;
+    emit MetadataAddressSet(msg.sender, metadataAddress_);
   }
 
   // OVERRIDES (the following functions are overrides required by OpenZeppelin contracts)

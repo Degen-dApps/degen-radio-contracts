@@ -12,6 +12,8 @@ interface IERC721 {
  * @notice Put the radio on the blockchain.
  */
 contract DegenRadioPlaylist {
+  address[] public managers; // array of managers
+  mapping (address => bool) public isManager; // mapping of managers
 
   struct Track {
     address nftAddress;
@@ -30,9 +32,25 @@ contract DegenRadioPlaylist {
   Track[] public tracks; // array of Music NFT contract addresses
   uint256[] public customOrder; // array of custom order of tracks indices (if it's not set, the default is 0, 1, 2, ...)
 
+  // EVENTS
+  event ManagerAdd(address indexed owner_, address indexed manager_);
+  event ManagerRemove(address indexed owner_, address indexed manager_);
+  event OrderSet(address indexed caller_);
+  event TrackAdd(address indexed caller_, address indexed trackAddress_, uint256 trackTokenId_, uint256 nftType_);
+  event TrackRemove(address indexed caller_, address indexed trackAddress_);
+
   // MODIFIERS
   modifier onlyOwner() {
     require(msg.sender == IERC721(playlistNftAddress).ownerOf(playlistId), "DegenRadioPlaylist: caller is not the owner");
+    _;
+  }
+
+  modifier onlyOwnerOrManager() {
+    require(
+      isManager[msg.sender] || 
+      msg.sender == IERC721(playlistNftAddress).ownerOf(playlistId), 
+      "OwnableWithManagers: caller is not a manager or owner"
+    );
     _;
   }
 
@@ -67,6 +85,14 @@ contract DegenRadioPlaylist {
     return lastTracks_;
   }
 
+  function getManagers() external view returns (address[] memory) {
+    return managers;
+  }
+
+  function getManagersLength() external view returns (uint256) {
+    return managers.length;
+  }
+
   function getTrack(uint256 index_) external view returns (Track memory) {
     return tracks[index_];
   }
@@ -99,14 +125,72 @@ contract DegenRadioPlaylist {
     return tracks.length;
   }
 
+  // MANAGER
+  function removeYourselfAsManager() external {
+    require(isManager[msg.sender], "DegenRadioPlaylist: caller is not a manager");
+
+    address manager_ = msg.sender;
+
+    isManager[manager_] = false;
+    uint256 length = managers.length;
+
+    for (uint256 i = 0; i < length;) {
+      if (managers[i] == manager_) {
+        managers[i] = managers[length - 1];
+        managers.pop();
+        emit ManagerRemove(msg.sender, manager_);
+        return;
+      }
+
+      unchecked {
+        i++;
+      }
+    }
+  }
+
   // OWNER
+
+  function addManager(address manager_) external onlyOwner {
+    require(!isManager[manager_], "OwnableWithManagers: manager already added");
+    isManager[manager_] = true;
+    managers.push(manager_);
+    emit ManagerAdd(msg.sender, manager_);
+  }
+
+  function removeManagerByAddress(address manager_) external onlyOwner {
+    isManager[manager_] = false;
+    uint256 length = managers.length;
+
+    for (uint256 i = 0; i < length;) {
+      if (managers[i] == manager_) {
+        managers[i] = managers[length - 1];
+        managers.pop();
+        emit ManagerRemove(msg.sender, manager_);
+        return;
+      }
+
+      unchecked {
+        i++;
+      }
+    }
+  }
+
+  function removeManagerByIndex(uint256 index_) external onlyOwner {
+    emit ManagerRemove(msg.sender, managers[index_]);
+    isManager[managers[index_]] = false;
+    managers[index_] = managers[managers.length - 1];
+    managers.pop();
+  }
+
+  // MANAGER AND OWNER
 
   function addTrack(
     address addr_,
     uint256 tokenId_,
     uint256 nftType_
-  ) external onlyOwner {
+  ) external onlyOwnerOrManager {
     tracks.push(Track(addr_, tokenId_, nftType_));
+    emit TrackAdd(msg.sender, addr_, tokenId_, nftType_);
   }
 
   function addTrackToIndex(
@@ -114,26 +198,29 @@ contract DegenRadioPlaylist {
     uint256 tokenId_,
     uint256 nftType_,
     uint256 index_
-  ) external onlyOwner {
+  ) external onlyOwnerOrManager {
     tracks[index_] = Track(addr_, tokenId_, nftType_);
+    emit TrackAdd(msg.sender, addr_, tokenId_, nftType_);
   }
 
-  function removeTrackByIndex(uint256 index_) external onlyOwner {
+  function removeTrackByIndex(uint256 index_) external onlyOwnerOrManager {
     require(index_ < tracks.length, "DegenRadioPlaylist: Invalid index");
     require(tracks.length > 1, "DegenRadioPlaylist: Playlist must have at least one track");
 
-    tracks[index_] = tracks[tracks.length - 1];
+    emit TrackRemove(msg.sender, tracks[index_].nftAddress);
 
+    tracks[index_] = tracks[tracks.length - 1];
     tracks.pop();
   }
 
-  function removeTrackByAddress(address addr_) external onlyOwner {
+  function removeTrackByAddress(address addr_) external onlyOwnerOrManager {
     uint256 tracksLength_ = tracks.length;
 
     for (uint256 i = 0; i < tracksLength_; i++) {
       if (tracks[i].nftAddress == addr_) {
         tracks[i] = tracks[tracksLength_ - 1];
         tracks.pop();
+        emit TrackRemove(msg.sender, addr_);
         return;
       }
     }
@@ -142,8 +229,9 @@ contract DegenRadioPlaylist {
   }
 
   /// @notice Sets the custom order of tracks
-  function setCustomOrder(uint256[] memory order_) external onlyOwner {
+  function setCustomOrder(uint256[] memory order_) external onlyOwnerOrManager {
     customOrder = order_;
+    emit OrderSet(msg.sender);
   }
 
 }

@@ -38,6 +38,11 @@ contract DegenRadioFactory {
     _;
   }
 
+  // EVENTS
+  event OwnerSet(address indexed caller_, address indexed owner_);
+  event PlaylistCreated(address indexed caller_, address indexed playlistAddress_, uint256 paid_);
+  event PriceSet(address indexed caller_, uint256 price_);
+
   // WRITE
   /**
    * @notice Creates a new Degen Radio Playlist
@@ -59,7 +64,7 @@ contract DegenRadioFactory {
 
     // send payment to owner
     if (msg.value > 0 && owner != address(0)) {
-      (bool success, ) = owner.call{value: msg.value}("");
+      (bool success, ) = owner.call{value: address(this).balance}("");
       require(success, "DegenRadioFactory: payment failed");
     }
 
@@ -80,15 +85,19 @@ contract DegenRadioFactory {
       description_,
       image_
     );
+    
+    emit PlaylistCreated(msg.sender, playlistAddress_, msg.value);
   }
 
   // OWNER
 
   function setOwner(address owner_) external onlyOwner {
     owner = owner_;
+    emit OwnerSet(msg.sender, owner_);
   }
 
   function setPrice(uint256 price_) external onlyOwner {
     price = price_;
+    emit PriceSet(msg.sender, price_);
   }
 }

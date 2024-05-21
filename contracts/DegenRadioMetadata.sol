@@ -10,6 +10,10 @@ interface INFT {
   function ownerOf(uint256 tokenId) external view returns (address);
 }
 
+interface IPlaylist {
+  function isManager(address manager_) external view returns (bool);
+}
+
 interface IState {
   function getDescription(uint256 tokenId_) external view returns (string memory);
   function getGenre(uint256 tokenId_) external view returns (string memory);
@@ -35,13 +39,22 @@ contract DegenRadioMetadata {
 
   // MODIFIERS
   modifier onlyTokenHolder(uint256 tokenId_) {
+    address playlistAddress = INFT(playlistNftAddress).getPlaylistAddress(tokenId_);
+
     require(
-      msg.sender == INFT(playlistNftAddress).ownerOf(tokenId_) || 
-      msg.sender == playlistNftAddress, 
+      msg.sender == INFT(playlistNftAddress).ownerOf(tokenId_) || // playlist owner
+      IPlaylist(playlistAddress).isManager(msg.sender) || // playlist manager
+      msg.sender == playlistNftAddress, // playlist NFT contract itself
       "Not owner of NFT token"
     );
     _;
   }
+
+  // EVENTS
+  event DescriptionSet(address indexed caller_, uint256 indexed tokenId_);
+  event GenreSet(address indexed caller_, uint256 indexed tokenId_);
+  event ImageSet(address indexed caller_, uint256 indexed tokenId_);
+  event NameSet(address indexed caller_, uint256 indexed tokenId_);
 
   // CONSTRUCTOR
   constructor(address mdState_, address playlistNftAddress_) {
@@ -57,6 +70,10 @@ contract DegenRadioMetadata {
 
   function getExternalUrl(uint256 tokenId_) external view returns (string memory) {
     return INFT(playlistNftAddress).getExternalUrl(tokenId_);
+  }
+
+  function getGenre(uint256 tokenId_) external view returns (string memory) {
+    return IState(mdState).getGenre(tokenId_);
   }
 
   function getImage(uint256 tokenId_) external view returns (string memory) {
@@ -100,14 +117,22 @@ contract DegenRadioMetadata {
 
   function setDescription(uint256 tokenId_, string memory description_) external onlyTokenHolder(tokenId_) {
     IState(mdState).setDescription(tokenId_, description_);
+    emit DescriptionSet(msg.sender, tokenId_);
+  }
+
+  function setGenre(uint256 tokenId_, string memory genre_) external onlyTokenHolder(tokenId_) {
+    IState(mdState).setGenre(tokenId_, genre_);
+    emit GenreSet(msg.sender, tokenId_);
   }
 
   function setImage(uint256 tokenId_, string memory image_) external onlyTokenHolder(tokenId_) {
     IState(mdState).setImage(tokenId_, image_);
+    emit ImageSet(msg.sender, tokenId_);
   }
 
   function setName(uint256 tokenId_, string memory name_) external onlyTokenHolder(tokenId_) {
     IState(mdState).setName(tokenId_, name_);
+    emit NameSet(msg.sender, tokenId_);
   }
 
 }
