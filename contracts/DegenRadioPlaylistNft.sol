@@ -52,6 +52,20 @@ contract DegenRadioPlaylistNft is ERC721, ERC721Enumerable, OwnableWithManagers 
     return string(abi.encodePacked(baseUrl, addrStr));
   }
 
+  function getLastPlaylists(uint256 amount_) external view returns (address[] memory) {
+    if (amount_ > counter - 1) {
+      amount_ = counter - 1;
+    }
+
+    address[] memory lastPlaylists = new address[](amount_);
+
+    for (uint256 i = 0; i < amount_; i++) {
+      lastPlaylists[i] = playlists[counter - 1 - i];
+    }
+    
+    return lastPlaylists;
+  }
+
   function getPlaylistAddress(uint256 tokenId_) external view returns (address) {
     return playlists[tokenId_];
   }

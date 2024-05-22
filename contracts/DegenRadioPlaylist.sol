@@ -97,6 +97,10 @@ contract DegenRadioPlaylist {
     return tracks[index_];
   }
 
+  function getTrackOrder() external view returns (uint256[] memory) {
+    return customOrder;
+  }
+
   function getTrackData(uint256 index_) external view returns (address nftAddress, uint256 tokenId, uint256 nftType) {
     Track memory track_ = tracks[index_];
     return (track_.nftAddress, track_.tokenId, track_.nftType);

@@ -208,7 +208,7 @@ describe("Degen Radio test", function () {
     //console.log("Last 5 tracks:", lastTracks3);
     expect(lastTracks3.length).to.equal(3);
 
-    // manager removes track with index 2
+    // manager removes track with index 1
     await playlistContract.connect(user1).removeTrackByIndex(1);
 
     const lastTracks4 = await playlistContract.getLastTracks(5);
@@ -251,10 +251,105 @@ describe("Degen Radio test", function () {
     // get managers list after2
     const managersAfter2 = await playlistContract.getManagers();
     expect(managersAfter2.length).to.equal(0);
-  });
 
-  // TODO: 
-  // - change custom order of tracks in playlist
-  // - getExternalUrl from playlist NFT contract
+    // get tracks order before
+    const tracksOrderBefore = await playlistContract.getTrackOrder();
+    console.log("Tracks order before:", tracksOrderBefore);
+    expect(tracksOrderBefore).to.be.empty;
+
+    // set custom order
+    const newOrder = [1, 0];
+    await playlistContract.setCustomOrder(newOrder);
+
+    // get tracks order after
+    const tracksOrderAfter = await playlistContract.getTrackOrder();
+    console.log("Tracks order after:", tracksOrderAfter);
+    expect(tracksOrderAfter.length).to.equal(2);
+
+    // getExternalUrl from playlist NFT contract
+    const externalUrl = await playlistNftContract.getExternalUrl(playlistId);
+    console.log("External URL:", externalUrl);
+
+    // get playlist NFT contract total supply
+    const totalSupply = await playlistNftContract.totalSupply();
+    console.log("Total supply:", Number(totalSupply));
+    expect(totalSupply).to.equal(1);
+
+    // create 3 more playlists
+
+    // create playlist 2
+    playlistId = 2;
+    playlistName = "Second playlist";
+    playlistDescription = "This is the second playlist";
+    playlistImage = "https://blog.hootsuite.com/wp-content/uploads/2022/09/How-to-make-a-playlist-on-tiktok.png";
+
+    await factoryContract.createPlaylist(
+      playlistName, 
+      playlistDescription,
+      playlistImage,
+      musicNftContract2.address, // track address
+      1, // track token ID (if not found, use 1)
+      1, // track type (1: ERC721 with same metadata, 2: ERC721 with different metadata, 3: ERC1155)
+      { value: factoryPrice }
+    );
+
+    // get total supply after creating playlist 2
+    const totalSupply2 = await playlistNftContract.totalSupply();
+    console.log("Total supply after creating playlist 2:", Number(totalSupply2));
+    expect(totalSupply2).to.equal(2);
+
+    // create playlist 3
+    playlistId = 3;
+    playlistName = "Third playlist";
+    playlistDescription = "This is the third playlist";
+    playlistImage = "https://blog.hootsuite.com/wp-content/uploads/2022/09/How-to-make-a-playlist-on-tiktok.png";
+
+    await factoryContract.createPlaylist(
+      playlistName, 
+      playlistDescription,
+      playlistImage,
+      musicNftContract3.address, // track address
+      1, // track token ID (if not found, use 1)
+      1, // track type (1: ERC721 with same metadata, 2: ERC721 with different metadata, 3: ERC1155)
+      { value: factoryPrice }
+    );
+
+    // get total supply after creating playlist 3
+    const totalSupply3 = await playlistNftContract.totalSupply();
+    console.log("Total supply after creating playlist 3:", Number(totalSupply3));
+    expect(totalSupply3).to.equal(3);
+
+    // get playlist 2 address
+    const playlistAddress2 = await playlistNftContract.getPlaylistAddress(2);
+    console.log("Playlist 2 address:", playlistAddress2);
+
+    // get playlist 3 address
+    const playlistAddress3 = await playlistNftContract.getPlaylistAddress(3);
+    console.log("Playlist 3 address:", playlistAddress3);
+
+    // get last 1 playlist
+    const lastPlaylist = await playlistNftContract.getLastPlaylists(1);
+    console.log("Last playlist:", lastPlaylist);
+    expect(lastPlaylist.length).to.equal(1);
+
+    // get last 2 playlists
+    const lastPlaylists = await playlistNftContract.getLastPlaylists(2);
+    console.log("Last 2 playlists:", lastPlaylists);
+    expect(lastPlaylists.length).to.equal(2);
+
+    // get last 3 playlists
+    const lastPlaylists2 = await playlistNftContract.getLastPlaylists(3);
+    console.log("Last 3 playlists:", lastPlaylists2);
+    expect(lastPlaylists2.length).to.equal(3);
+
+    // get last 4 playlists
+    const lastPlaylists3 = await playlistNftContract.getLastPlaylists(4);
+    console.log("Last 4 playlists:", lastPlaylists3);
+    expect(lastPlaylists3.length).to.equal(3);
+
+    const lastPlaylists0 = await playlistNftContract.getLastPlaylists(0);
+    console.log("Last 0 playlists:", lastPlaylists0);
+    expect(lastPlaylists0.length).to.equal(0);
+  });
 
 });
