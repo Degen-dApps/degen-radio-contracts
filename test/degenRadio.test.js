@@ -350,6 +350,27 @@ describe("Degen Radio test", function () {
     const lastPlaylists0 = await playlistNftContract.getLastPlaylists(0);
     console.log("Last 0 playlists:", lastPlaylists0);
     expect(lastPlaylists0.length).to.equal(0);
+
+    // get last tracks before (playlist 2)
+    const lastTracksBeforePlaylist2 = await playlistContract.getLastTracks(5);
+    //console.log("Last tracks before playlist 2:", lastTracksBeforePlaylist2);
+    expect(lastTracksBeforePlaylist2.length).to.equal(2);
+
+    // add multiple tracks to playlist 2
+    let tracks = [
+      { nftAddress: musicNftContract1.address, tokenId: 1, nftType: 1 },
+      { nftAddress: musicNftContract2.address, tokenId: 1, nftType: 1 },
+      { nftAddress: musicNftContract3.address, tokenId: 1, nftType: 1 }
+    ];
+
+    await playlistContract.addTracks(tracks);
+
+    // get last tracks after (playlist 2)
+    const lastTracksAfterPlaylist2 = await playlistContract.getLastTracks(5);
+    //console.log("Last tracks after playlist 2:", lastTracksAfterPlaylist2);
+    expect(lastTracksAfterPlaylist2.length).to.equal(5);
+
+
   });
 
 });

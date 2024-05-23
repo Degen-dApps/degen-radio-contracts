@@ -197,6 +197,19 @@ contract DegenRadioPlaylist {
     emit TrackAdd(msg.sender, addr_, tokenId_, nftType_);
   }
 
+  function addTracks(Track[] memory tracks_) external onlyOwnerOrManager {
+    uint256 tracksLength_ = tracks_.length;
+
+    for (uint256 i = 0; i < tracksLength_;) {
+      tracks.push(tracks_[i]);
+      emit TrackAdd(msg.sender, tracks_[i].nftAddress, tracks_[i].tokenId, tracks_[i].nftType);
+
+      unchecked {
+        i++;
+      }
+    }
+  }
+
   function addTrackToIndex(
     address addr_,
     uint256 tokenId_,
