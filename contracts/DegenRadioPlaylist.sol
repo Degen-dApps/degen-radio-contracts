@@ -19,6 +19,7 @@ contract DegenRadioPlaylist {
     address nftAddress;
     uint256 tokenId;
     uint256 nftType; // see below, default is 0
+    uint256 chainId; // chain ID of the NFT contract (optional, default is the chain where this contract is deployed)
   }
 
   // NFT TYPES
@@ -36,7 +37,8 @@ contract DegenRadioPlaylist {
   event ManagerAdd(address indexed owner_, address indexed manager_);
   event ManagerRemove(address indexed owner_, address indexed manager_);
   event OrderSet(address indexed caller_);
-  event TrackAdd(address indexed caller_, address indexed trackAddress_, uint256 trackTokenId_, uint256 nftType_);
+  event TrackAdd(address indexed caller_, address indexed trackAddress_, uint256 trackTokenId_, uint256 nftType_, uint256 chainId_);
+  event TrackEdit(address indexed caller_, address indexed trackAddress_, uint256 trackTokenId_, uint256 nftType_, uint256 chainId_);
   event TrackRemove(address indexed caller_, address indexed trackAddress_);
 
   // MODIFIERS
@@ -60,11 +62,12 @@ contract DegenRadioPlaylist {
     address playlistNftAddr_, 
     address trackAddr_, // the first track in the playlist (playlist must have at least one track)
     uint256 trackTokenId_,
-    uint256 trackType_
+    uint256 trackType_,
+    uint256 trackChainId_
   ) {
     playlistId = playlistId_;
     playlistNftAddress = playlistNftAddr_;
-    tracks.push(Track(trackAddr_, trackTokenId_, trackType_)); 
+    tracks.push(Track(trackAddr_, trackTokenId_, trackType_, trackChainId_)); 
   }
 
   // READ
@@ -101,9 +104,9 @@ contract DegenRadioPlaylist {
     return customOrder;
   }
 
-  function getTrackData(uint256 index_) external view returns (address nftAddress, uint256 tokenId, uint256 nftType) {
+  function getTrackData(uint256 index_) external view returns (address nftAddress, uint256 tokenId, uint256 nftType, uint256 chainId) {
     Track memory track_ = tracks[index_];
-    return (track_.nftAddress, track_.tokenId, track_.nftType);
+    return (track_.nftAddress, track_.tokenId, track_.nftType, track_.chainId);
   }
 
   function getTracks(uint256 startIndex_, uint256 endIndex_) external view returns (Track[] memory) {
@@ -191,10 +194,11 @@ contract DegenRadioPlaylist {
   function addTrack(
     address addr_,
     uint256 tokenId_,
-    uint256 nftType_
+    uint256 nftType_,
+    uint256 chainId_
   ) external onlyOwnerOrManager {
-    tracks.push(Track(addr_, tokenId_, nftType_));
-    emit TrackAdd(msg.sender, addr_, tokenId_, nftType_);
+    tracks.push(Track(addr_, tokenId_, nftType_, chainId_));
+    emit TrackAdd(msg.sender, addr_, tokenId_, nftType_, chainId_);
   }
 
   function addTracks(Track[] memory tracks_) external onlyOwnerOrManager {
@@ -202,7 +206,7 @@ contract DegenRadioPlaylist {
 
     for (uint256 i = 0; i < tracksLength_;) {
       tracks.push(tracks_[i]);
-      emit TrackAdd(msg.sender, tracks_[i].nftAddress, tracks_[i].tokenId, tracks_[i].nftType);
+      emit TrackAdd(msg.sender, tracks_[i].nftAddress, tracks_[i].tokenId, tracks_[i].nftType, tracks_[i].chainId);
 
       unchecked {
         i++;
@@ -214,10 +218,22 @@ contract DegenRadioPlaylist {
     address addr_,
     uint256 tokenId_,
     uint256 nftType_,
+    uint256 chainId_,
     uint256 index_
   ) external onlyOwnerOrManager {
-    tracks[index_] = Track(addr_, tokenId_, nftType_);
-    emit TrackAdd(msg.sender, addr_, tokenId_, nftType_);
+    tracks[index_] = Track(addr_, tokenId_, nftType_, chainId_);
+    emit TrackAdd(msg.sender, addr_, tokenId_, nftType_, chainId_);
+  }
+
+  function editTrackAtIndex(
+    uint256 index_,
+    address addr_,
+    uint256 tokenId_,
+    uint256 nftType_,
+    uint256 chainId_
+  ) external onlyOwnerOrManager {
+    tracks[index_] = Track(addr_, tokenId_, nftType_, chainId_);
+    emit TrackEdit(msg.sender, addr_, tokenId_, nftType_, chainId_);
   }
 
   function removeTrackByIndex(uint256 index_) external onlyOwnerOrManager {

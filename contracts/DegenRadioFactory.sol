@@ -58,7 +58,8 @@ contract DegenRadioFactory {
     string memory image_,
     address trackAddress_, // track NFT contract address
     uint256 trackTokenId_, // track NFT token ID
-    uint256 trackType_ // track NFT type (see types in DegenRadioPlaylist.sol)
+    uint256 trackType_, // track NFT type (see types in DegenRadioPlaylist.sol)
+    uint256 trackChainId_ // chain ID of the track NFT contract
   ) external payable returns (address playlistAddress_) {
     require(msg.value >= price, "DegenRadioFactory: insufficient funds");
 
@@ -75,7 +76,8 @@ contract DegenRadioFactory {
       playlistNftAddress,
       trackAddress_,
       trackTokenId_,
-      trackType_
+      trackType_,
+      trackChainId_
     ));
 
     IDegenRadioPlaylistNft(playlistNftAddress).addPlaylist(

@@ -122,6 +122,7 @@ describe("Degen Radio test", function () {
       musicNftContract1.address, // track address
       1, // track token ID (if not found, use 1)
       1, // track type (1: ERC721 with same metadata, 2: ERC721 with different metadata, 3: ERC1155)
+      1, // chain ID
       { value: factoryPrice }
     );
 
@@ -175,22 +176,29 @@ describe("Degen Radio test", function () {
 
     // get track with index 0
     const track = await playlistContract.getTrack(0);
+
     console.log("Track:", track.nftAddress);
     expect(track.nftAddress).to.equal(musicNftContract1.address);
+
+    console.log("Track chain ID:", track.chainId);
+    expect(track.chainId).to.equal(1);
 
     // get track with index 1 (expect a revert)
     await expect(playlistContract.getTrack(1)).to.be.reverted;
 
     // get track data for track with index 0
     const trackData = await playlistContract.getTrackData(0);
+
     //console.log("Track data:", trackData);
     expect(trackData.nftAddress).to.equal(musicNftContract1.address);
+    expect(trackData.chainId).to.equal(1);
 
     // add one more track to the playlist
     await playlistContract.addTrack(
       musicNftContract2.address, // track address
       1, // track token ID (if not found, use 1)
       1, // track type (1: ERC721 with same metadata, 2: ERC721 with different metadata, 3: ERC1155)
+      666666666 // chain ID
     );
 
     const lastTracks2 = await playlistContract.getLastTracks(5);
@@ -202,6 +210,7 @@ describe("Degen Radio test", function () {
       musicNftContract3.address, // track address
       1, // track token ID (if not found, use 1)
       1, // track type (1: ERC721 with same metadata, 2: ERC721 with different metadata, 3: ERC1155)
+      42161 // chain ID
     );
 
     const lastTracks3 = await playlistContract.getLastTracks(5);
@@ -290,6 +299,7 @@ describe("Degen Radio test", function () {
       musicNftContract2.address, // track address
       1, // track token ID (if not found, use 1)
       1, // track type (1: ERC721 with same metadata, 2: ERC721 with different metadata, 3: ERC1155)
+      10, // chain ID
       { value: factoryPrice }
     );
 
@@ -311,6 +321,7 @@ describe("Degen Radio test", function () {
       musicNftContract3.address, // track address
       1, // track token ID (if not found, use 1)
       1, // track type (1: ERC721 with same metadata, 2: ERC721 with different metadata, 3: ERC1155)
+      42161, // chain ID
       { value: factoryPrice }
     );
 
@@ -358,9 +369,9 @@ describe("Degen Radio test", function () {
 
     // add multiple tracks to playlist 2
     let tracks = [
-      { nftAddress: musicNftContract1.address, tokenId: 1, nftType: 1 },
-      { nftAddress: musicNftContract2.address, tokenId: 1, nftType: 1 },
-      { nftAddress: musicNftContract3.address, tokenId: 1, nftType: 1 }
+      { nftAddress: musicNftContract1.address, tokenId: 1, nftType: 1, chainId: 1 },
+      { nftAddress: musicNftContract2.address, tokenId: 1, nftType: 1, chainId: 666666666 },
+      { nftAddress: musicNftContract3.address, tokenId: 1, nftType: 1, chainId: 42161 },
     ];
 
     await playlistContract.addTracks(tracks);
