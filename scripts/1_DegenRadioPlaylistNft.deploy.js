@@ -1,10 +1,11 @@
-// npx hardhat run scripts/deploy-1/exampleAutoVerification.deploy.js --network degen
+// npx hardhat run scripts/1_DegenRadioPlaylistNft.deploy.js --network degen
 
-const contractName = "Example";
+const contractName = "DegenRadioPlaylistNft";
+const pauseLength = 4000; // in milliseconds
 
 const constructorArgs = [
-  "Hello, world", // greeting
-  1 // counter
+  "Degen Radio Playlists", // NFT name
+  "PLAYLISTS" // NFT symbol
 ];
 
 async function main() {
@@ -26,16 +27,17 @@ async function main() {
 
   try {
     console.log("Wait a bit before starting the verification process...");
-    sleep(2000);
+    sleep(pauseLength);
     await hre.run("verify:verify", {
       address: instance.address,
       constructorArguments: constructorArgs,
     });
   } catch (error) {
     console.error(error);
+  } finally {
     console.log("If automated verification did not succeed, try to verify the smart contract manually by running this command:");
     // TODO:
-    console.log("npx hardhat verify --network " + network.name + " " + instance.address + ' "' + greeting + '" "' + counter + '"');
+    console.log("npx hardhat verify --network " + network.name + " " + instance.address + ' "' + constructorArgs[0] + '" "' + constructorArgs[1] + '"');
   }
 }
 

@@ -39,7 +39,7 @@ contract DegenRadioPlaylistNft is ERC721, ERC721Enumerable, OwnableWithManagers 
   event WriterRemoved(address indexed caller_, address indexed writer_);
 
   // CONSTRUCTOR
-  constructor() ERC721("Degen Radio Playlists", "PLAYLISTS") {}
+  constructor(string memory name_, string memory symbol_) ERC721(name_, symbol_) {}
 
   // READ
   function getCounter() external view returns (uint256) {

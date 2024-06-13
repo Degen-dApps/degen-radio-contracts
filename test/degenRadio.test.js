@@ -30,7 +30,7 @@ describe("Degen Radio test", function () {
     await musicNftContract3.deployed();
 
     const DegenRadioPlaylistNft = await ethers.getContractFactory("DegenRadioPlaylistNft");
-    playlistNftContract = await DegenRadioPlaylistNft.deploy();
+    playlistNftContract = await DegenRadioPlaylistNft.deploy("Degen Radio Playlists", "PLAYLISTS");
     await playlistNftContract.deployed();
 
     const DegenRadioMetadataState = await ethers.getContractFactory("DegenRadioMetadataState");

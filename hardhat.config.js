@@ -17,12 +17,20 @@ module.exports = {
       gas: "auto", // gas limit
       gasPrice: 1000000000, // 1 gwei
     },
+    sepolia: { // Sepolia testnet
+      url: 'https://eth-sepolia.public.blastapi.io',
+      chainId: 11155111,
+      accounts: [process.env.DEPLOYER_PRIVATE_KEY],
+      gas: "auto", // gas limit
+      gasPrice: 15000000000, // 15 gwei
+    },
   },
 
   /* Verification on the Degen block explorer */
   etherscan: {
     apiKey: { 
       degen: "somestring", // no API key is needed, but it cannot be an empty string either
+      sepolia: process.env.ETHERSCAN_API_KEY,
     },
 
     customChains: [
