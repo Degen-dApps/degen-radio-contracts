@@ -15,7 +15,7 @@ module.exports = {
       chainId: 666666666,
       accounts: [process.env.DEPLOYER_PRIVATE_KEY],
       gas: "auto", // gas limit
-      gasPrice: 1000000000, // 1 gwei
+      gasPrice: 100000000000, // 100 gwei
     },
     sepolia: { // Sepolia testnet
       url: 'https://eth-sepolia.public.blastapi.io',

@@ -5,8 +5,8 @@ const pauseLength = 4000; // in milliseconds
 
 // TODO:
 const constructorArgs = [
-  "", // Metadata State contract address
-  "" // Playlist NFT contract address
+  "0xF9896481b2937C3BdcDCf6eC645e059Eb96668Ae", // Metadata State contract address
+  "0x2ecCADbCF2C6b3B8daAd5D125D66e58eE8C91415" // Playlist NFT contract address
 ];
 
 async function main() {

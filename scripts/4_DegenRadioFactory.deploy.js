@@ -5,7 +5,7 @@ const pauseLength = 4000; // in milliseconds
 
 // TODO:
 const constructorArgs = [
-  "" // Playlist NFT contract address
+  "0x2ecCADbCF2C6b3B8daAd5D125D66e58eE8C91415" // Playlist NFT contract address
 ];
 
 async function main() {
@@ -30,7 +30,7 @@ async function main() {
 
   console.log("Playlist NFT contract created.");
 
-  // set metadata contract to playlist nft contract as metadata address
+  // set factory contract to playlist nft contract as writer
   await playlistNftInstance.addWriter(instance.address);
 
   console.log("Factory address added as writer in Playlist NFT contract.");
