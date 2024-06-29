@@ -1,11 +1,11 @@
-// npx hardhat run scripts/4_DegenRadioFactory.deploy.js --network degen
+// npx hardhat run scripts/4_DegenRadioFactory.deploy.js --network sepolia
 
 const contractName = "DegenRadioFactory";
 const pauseLength = 4000; // in milliseconds
 
 // TODO:
 const constructorArgs = [
-  "0x2ecCADbCF2C6b3B8daAd5D125D66e58eE8C91415" // Playlist NFT contract address
+  "0xbb6fca36B0d0107773a410103e9f1f459C3eb95e" // Playlist NFT contract address
 ];
 
 async function main() {

@@ -89,6 +89,10 @@ contract DegenRadioPlaylist {
     return managers.length;
   }
 
+  function getOwner() external view returns (address) {
+    return IERC721(playlistNftAddress).ownerOf(playlistId);
+  }
+
   function getTrack(uint256 index_) external view returns (Track memory) {
     return tracks[index_];
   }

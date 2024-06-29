@@ -126,6 +126,7 @@ describe("Degen Radio test", function () {
     );
 
     const receipt = await tx.wait();
+    //console.log("Receipt:", receipt);
 
     // get events from receipt
     const events = receipt.events;
@@ -150,6 +151,7 @@ describe("Degen Radio test", function () {
     // check owner of playlist NFT
     let playlistOwner = await playlistNftContract.ownerOf(playlistId);
     expect(playlistOwner).to.equal(owner.address);
+    console.log("Playlist owner:", playlistOwner);
 
     // check owners balance of playlist NFTs
     let ownerBalance = await playlistNftContract.balanceOf(owner.address);

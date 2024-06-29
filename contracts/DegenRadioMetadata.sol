@@ -109,6 +109,7 @@ contract DegenRadioMetadata {
 
     return string(abi.encodePacked(
       '"external_url": "', INFT(playlistNftAddress).getExternalUrl(tokenId_), '", ',
+      '"owner": "', Strings.toHexString(uint256(uint160(INFT(playlistNftAddress).ownerOf(tokenId_))), 20), '", ',
       '"playlist_address": "', addrStr, '", '
     ));
   }
