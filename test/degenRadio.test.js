@@ -45,7 +45,10 @@ describe("Degen Radio test", function () {
     await playlistNftContract.setMetadataAddress(metadataContract.address);
 
     const DegenRadioFactory = await ethers.getContractFactory("DegenRadioFactory");
-    factoryContract = await DegenRadioFactory.deploy(playlistNftContract.address);
+    factoryContract = await DegenRadioFactory.deploy(
+      playlistNftContract.address,
+      ethers.utils.parseEther("0") // price to create a playlist
+    );
     await factoryContract.deployed();
 
     // Add factory as writer to playlistNftContract

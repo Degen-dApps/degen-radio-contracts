@@ -5,7 +5,8 @@ const pauseLength = 4000; // in milliseconds
 
 // TODO:
 const constructorArgs = [
-  "0xbb6fca36B0d0107773a410103e9f1f459C3eb95e" // Playlist NFT contract address
+  "0xbb6fca36B0d0107773a410103e9f1f459C3eb95e", // Playlist NFT contract address
+  ethers.utils.parseEther("69"), // Price to create a playlist
 ];
 
 async function main() {
@@ -18,7 +19,8 @@ async function main() {
   const contract = await ethers.getContractFactory(contractName);
   const instance = await contract.deploy(
     // TODO:
-    constructorArgs[0]
+    constructorArgs[0],
+    constructorArgs[1]
   );
   await instance.deployed();
   
@@ -47,7 +49,7 @@ async function main() {
   } finally {
     console.log("If automated verification did not succeed, try to verify the smart contract manually by running this command:");
     // TODO:
-    console.log("npx hardhat verify --network " + network.name + " " + instance.address + ' ' + constructorArgs[0]);
+    console.log("npx hardhat verify --network " + network.name + " " + instance.address + ' ' + constructorArgs[0] + ' "' + constructorArgs[1] + '"');
   }
 }
 

@@ -24,12 +24,13 @@ interface IDegenRadioPlaylistNft {
 contract DegenRadioFactory {
   address public immutable playlistNftAddress; // address of the playlist NFT contract (DegenRadioPlaylistNft.sol)
   address public owner; // owner of the factory
-  uint256 public price = 0; // price to create a playlist
+  uint256 public price; // price to create a playlist
 
   // CONSTRUCTOR
-  constructor(address playlistNftAddress_) {
+  constructor(address playlistNftAddress_, uint256 price_) {
     owner = msg.sender;
     playlistNftAddress = playlistNftAddress_;
+    price = price_;
   }
 
   // MODIFIERS
